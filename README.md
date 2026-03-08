@@ -4,6 +4,8 @@ Render LaTeX directly inside Obsidian's built-in Search results.
 
 This plugin detects inline math (`$...$`) and block math (`$$...$$`) in search hits, and tries to recover the full expression from the source note when Obsidian only shows a truncated fragment.
 
+Built from the official [`obsidianmd/obsidian-sample-plugin`](https://github.com/obsidianmd/obsidian-sample-plugin) template.
+
 ## What it does
 
 - Renders inline math in Search results.
