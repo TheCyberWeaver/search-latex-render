@@ -1,0 +1,17 @@
+{
+  "name": "obsidian-search-latex-render",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Render recovered LaTeX formulas inside Obsidian search results.",
+  "scripts": {
+    "build": "node esbuild.config.mjs production",
+    "dev": "node esbuild.config.mjs",
+    "test": "node --experimental-strip-types scripts/verify-math-recovery.mts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.25.0",
+    "obsidian": "latest"
+  }
+}

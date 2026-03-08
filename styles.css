@@ -1,0 +1,23 @@
+.search-result-file-match .slrx-rendered-snippet,
+.search-result-file-match-line .slrx-rendered-snippet {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.search-result-file-match .slrx-rendered-snippet p,
+.search-result-file-match-line .slrx-rendered-snippet p {
+  display: inline;
+  margin: 0;
+}
+
+.search-result-file-match .slrx-rendered-snippet .math.math-block,
+.search-result-file-match-line .slrx-rendered-snippet .math.math-block {
+  display: block;
+  margin: 0.35em 0;
+}
+
+.search-result-file-match .slrx-rendered-snippet .math.math-inline,
+.search-result-file-match-line .slrx-rendered-snippet .math.math-inline {
+  display: inline-block;
+  vertical-align: middle;
+}
