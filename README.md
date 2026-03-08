@@ -57,7 +57,7 @@ npm run build
 
 ## Compatibility
 
-- Minimum Obsidian version: `1.5.0`
+- Minimum app version: `1.5.0`
 
 ## License
 

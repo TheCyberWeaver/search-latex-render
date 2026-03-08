@@ -1,10 +1,10 @@
 {
   "id": "search-latex-render",
   "name": "Search Latex Render",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "minAppVersion": "1.5.0",
-  "description": "Render full LaTeX expressions inside Obsidian search results, including recovered partial snippets.",
+  "description": "Render full LaTeX expressions in search results, including recovered partial snippets.",
   "author": "Thomas Lu",
-  "authorUrl": "https://obsidian.md",
+  "authorUrl": "https://www.thomas-hub.com",
   "isDesktopOnly": false
 }
