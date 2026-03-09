@@ -1,4 +1,6 @@
 import {
+  App,
+  Component,
   MarkdownRenderer,
   Plugin,
   PluginSettingTab,
@@ -41,7 +43,7 @@ class SearchLatexRenderSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Enable search math rendering")
-      .setDesc("Render inline and block LaTeX inside the Search view.")
+      .setDesc("Render inline and block LaTeX inside the search view.")
       .addToggle((toggle) =>
         toggle.setValue(this.plugin.settings.enabled).onChange(async (value) => {
           this.plugin.settings.enabled = value;
@@ -112,12 +114,15 @@ class SearchLatexRenderSettingTab extends PluginSettingTab {
   }
 }
 
-class SearchResultController {
+class SearchResultController extends Component {
   private observer: MutationObserver | null = null;
   private timer: number | null = null;
   private isApplyingChanges = false;
+  private readonly originalContent = new WeakMap<HTMLElement, Node[]>();
 
-  constructor(private readonly plugin: SearchLatexRenderPlugin, private readonly leaf: WorkspaceLeaf) {}
+  constructor(private readonly plugin: SearchLatexRenderPlugin, private readonly leaf: WorkspaceLeaf) {
+    super();
+  }
 
   start(): void {
     const container = this.getSearchContainer();
@@ -145,6 +150,7 @@ class SearchResultController {
     this.restoreRenderedMatches();
     this.observer?.disconnect();
     this.observer = null;
+    this.unload();
   }
 
   scheduleProcess(): void {
@@ -234,20 +240,23 @@ class SearchResultController {
     });
   }
 
-  private captureOriginalHtml(matchEl: HTMLElement): void {
-    if (!matchEl.dataset.slrxOriginalHtml) {
-      matchEl.dataset.slrxOriginalHtml = matchEl.innerHTML;
-    }
-  }
-
-  private restoreElement(matchEl: HTMLElement): void {
-    const originalHtml = matchEl.dataset.slrxOriginalHtml;
-    if (!originalHtml) {
+  private captureOriginalContent(matchEl: HTMLElement): void {
+    if (this.originalContent.has(matchEl)) {
       return;
     }
 
-    matchEl.innerHTML = originalHtml;
-    delete matchEl.dataset.slrxOriginalHtml;
+    const snapshot = Array.from(matchEl.childNodes, (node) => node.cloneNode(true));
+    this.originalContent.set(matchEl, snapshot);
+  }
+
+  private restoreElement(matchEl: HTMLElement): void {
+    const originalNodes = this.originalContent.get(matchEl);
+    if (!originalNodes) {
+      return;
+    }
+
+    matchEl.replaceChildren(...originalNodes.map((node) => node.cloneNode(true)));
+    this.originalContent.delete(matchEl);
     delete matchEl.dataset.slrxRendered;
   }
 
@@ -333,10 +342,10 @@ class SearchResultController {
   }
 
   private async renderResult(matchEl: HTMLElement, file: TFile | null, result: RecoveryResult): Promise<void> {
-    this.captureOriginalHtml(matchEl);
+    this.captureOriginalContent(matchEl);
 
     const lineNumberClone = matchEl.querySelector(".search-result-file-match-line-number")?.cloneNode(true);
-    matchEl.innerHTML = "";
+    matchEl.replaceChildren();
 
     if (lineNumberClone instanceof Node) {
       matchEl.appendChild(lineNumberClone);
@@ -346,13 +355,14 @@ class SearchResultController {
     host.className = "slrx-rendered-snippet";
     host.dataset.recovered = result.recoveredFromFile ? "true" : "false";
     matchEl.appendChild(host);
-    await renderMixedMath(this.plugin, result.excerpt, host, file?.path ?? "");
+    await renderMixedMath(this.plugin.app, this, result.excerpt, host, file?.path ?? "");
     matchEl.dataset.slrxRendered = "true";
   }
 }
 
 async function renderMixedMath(
-  plugin: Plugin,
+  app: App,
+  component: Component,
   source: string,
   container: HTMLElement,
   sourcePath: string,
@@ -368,7 +378,7 @@ async function renderMixedMath(
     const mathHost = document.createElement("span");
     mathHost.className = segment.type === "block" ? "math math-block" : "math math-inline";
     container.appendChild(mathHost);
-    await MarkdownRenderer.render(plugin.app, segment.raw, mathHost, sourcePath, plugin);
+    await MarkdownRenderer.render(app, segment.raw, mathHost, sourcePath, component);
     unwrapParagraph(mathHost);
     cursor = segment.end;
   }
@@ -415,8 +425,8 @@ export default class SearchLatexRenderPlugin extends Plugin {
     );
 
     this.addCommand({
-      id: "toggle-search-latex-render",
-      name: "Toggle search LaTeX rendering",
+      id: "toggle-latex-rendering",
+      name: "Toggle LaTeX rendering in search results",
       callback: async () => {
         this.settings.enabled = !this.settings.enabled;
         await this.saveSettings();

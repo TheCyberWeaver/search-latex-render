@@ -3,7 +3,27 @@ import fs from "node:fs";
 import path from "node:path";
 import { parseMathDocument, recoverSearchExcerpt } from "../src/math-recovery.ts";
 
-const vaultRoot = "C:\\Users\\Thomas\\Documents\\Obsidian\\Main";
+function resolveVaultRoot(): string {
+  const override = process.env.VAULT_ROOT?.trim();
+  if (override) {
+    return override;
+  }
+
+  const candidates = [
+    "C:\\Users\\Thomas\\Documents\\Main",
+    "C:\\Users\\Thomas\\Documents\\Obsidian\\Main",
+  ];
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  return candidates[0];
+}
+
+const vaultRoot = resolveVaultRoot();
 
 function run(): void {
   {
